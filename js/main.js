@@ -22,9 +22,11 @@ var Food = Backbone.Model.extend({
 var SearchFoods = Backbone.Collection.extend({
 	model: Food,
 	url: '',
+
+	//Need to convert the API data into models
 	parse: function(data) {
-		return _.map(data.hits, function(model) {
-			return model;
+		return _.map(data.hits, function(hit) {
+			return new Food(hit);
 		})
 	}
 });
@@ -92,7 +94,6 @@ var SearchedFood = Backbone.View.extend({
 
 	render: function(){
 		$(this.el).html( this.template (this.model.attributes.fields) );
-		console.log($(this.el).html());
 		return this;
 	}
 });
