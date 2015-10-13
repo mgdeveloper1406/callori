@@ -4,8 +4,8 @@
 	make an API call, and the turn that
 	JSON response into a list of foods.
 
-	When you click a food, it will pop
-	over to the list of food in your meal,
+	When you click a food, it will be added
+	to the list of food in your meal,
 	and the total calories will update.
 */
 
@@ -37,7 +37,7 @@ var MealFoods = Backbone.Collection.extend({
 });
 
 //This view will instantiate the search bar,
-//and will manage all the overall list view
+//and will manage the overall list view
 var SearchList = Backbone.View.extend({
 	el: $('#search'),
 
@@ -46,7 +46,7 @@ var SearchList = Backbone.View.extend({
 	},
 
 	initialize: function(){
-		_.bindAll(this, 'render', 'search');
+		_.bindAll(this, 'render', 'search', 'resetSearchList');
 
 		this.collection = new SearchFoods();
 		this.listenTo(this.collection, 'reset', this.resetSearchList);
@@ -55,11 +55,13 @@ var SearchList = Backbone.View.extend({
 	},
 
 	render: function(){
-		$(this.el).append("<input type='text' id='searchField'></input>")
+		$(this.el).append("<input type='text' id='searchField'></input>");
 		$(this.el).append("<button id='searchButton'>Search!</button>");
 		$(this.el).append("<ul id='search-food-list'></ul>");
 	},
 
+	//Update the collection URL to make and send the correct API call.
+	//Could just pass the searchField.val() to the collection and handle this there?
 	search: function(){
 		var searchTerm = $('#searchField').val();
 		this.collection.url =
@@ -70,16 +72,18 @@ var SearchList = Backbone.View.extend({
 		this.collection.fetch({reset: true});
 	},
 
+	//clear the list and repopulate with new items
 	resetSearchList: function(){
+		$('#search-food-list').html('');
 		_.each(this.collection.models, function(model){
-			var view = new SearchedFood({model: model});
+			var view = new SearchedFoodItem({model: model});
    			$('#search-food-list').append( view.render().el );
 		})
 	}
 });
 
 //This view will handle all the searched food models
-var SearchedFood = Backbone.View.extend({
+var SearchedFoodItem = Backbone.View.extend({
 	tagName: 'li',
 
 	template: _.template($('#food-search-template').html()),
@@ -93,8 +97,12 @@ var SearchedFood = Backbone.View.extend({
 	},
 
 	render: function(){
-		$(this.el).html( this.template (this.model.attributes.fields) );
+		$(this.el).html( this.template(this.model.attributes.fields) );
 		return this;
+	},
+
+	addToMeal: function(){
+		Meal.collection.add(this.model.clone());
 	}
 });
 
@@ -106,12 +114,50 @@ var Meal = Backbone.View.extend({
 
 	},
 
-	intialize: function(){
-		_.bindAll(this, 'render', 'addToMeal')
+	initialize: function(){
+		_.bindAll(this, 'render', 'addMealItemToList');
 
 		this.collection = new MealFoods();
-		this.listenTo(this.collection, add, this.addToMeal)
+		this.listenTo(this.collection, 'add', this.addMealItemToList);
+
+		this.render();
+	},
+
+	render: function(){
+		$(this.el).append("<h1>Meal!</h1>");
+		$(this.el).append("<ul id='meal-food-list'></ul>");
+		$(this.el).append("<p id='total'>Total Calories: <span>0</span></p>");
+	},
+
+	addMealItemToList: function(model){
+		var view = new MealItem({model: model});
+		$('#meal-food-list').append(view.render().el);
 	}
 });
 
-var app = new SearchList;
+//A view for each item in the meal
+var MealItem = Backbone.View.extend({
+	tagName: 'li',
+
+	template: _.template($('#meal-item-template').html()),
+
+	events: {
+		'click #remove': 'removeMealItem'
+	},
+
+	initialize: function(){
+		_.bindAll(this, 'render', 'removeMealItem');
+	},
+
+	render: function(){
+		$(this.el).html( this.template(this.model.attributes.fields) );
+		return this;
+	},
+
+	removeMealItem: function(){
+		this.remove();
+	}
+})
+
+var Search = new SearchList;
+var Meal = new Meal;
