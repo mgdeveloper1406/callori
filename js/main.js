@@ -13,7 +13,8 @@ $(function(){
 
 	'use strict';
 
-	// All our foods will be the same model
+	// The food model doesn't have any custom logic,
+	// so I think I might be doing it wrong!
 	var Food = Backbone.Model.extend({
 
 		defaults: {
@@ -36,6 +37,7 @@ $(function(){
 	});
 
 	//This collection will manage the foods that we ate
+	//Again, no custom logic = doing it wrong?
 	var MealFoods = Backbone.Collection.extend({
 		model: Food
 	});
@@ -76,17 +78,17 @@ $(function(){
 
 		//clear the list and repopulate with new items
 		resetSearchList: function(){
-			$('#search-food-list').html('');
+			$('#searchResultsTable > tbody').html('');
 			_.each(this.collection.models, function(model){
 				var view = new SearchedFoodItem({model: model});
-	   			$('#search-food-list').append( view.render().el );
+	   			$('#searchResultsTable > tbody').append( view.render().el );
 			})
 		}
 	});
 
 	//This view will handle all the searched food models
 	var SearchedFoodItem = Backbone.View.extend({
-		tagName: 'li',
+		tagName: 'tr',
 
 		template: _.template($('#food-search-template').html()),
 
@@ -103,6 +105,7 @@ $(function(){
 			return this;
 		},
 
+		//Should views talk to unrelated collections like this??
 		addToMeal: function(){
 			Meal.collection.add(this.model.clone());
 		}
@@ -136,14 +139,14 @@ $(function(){
 		//Creates a new meal item, adds it to the list, and calls render to update the total
 		addMealItemToList: function(model){
 			var view = new MealItem({model: model});
-			$('#meal-food-list').append(view.render().el);
+			$('#mealTable > tbody').append(view.render().el);
 			this.render();
 		}
 	});
 
 	//A view for each item in the meal
 	var MealItem = Backbone.View.extend({
-		tagName: 'li',
+		tagName: 'tr',
 
 		template: _.template($('#meal-item-template').html()),
 
