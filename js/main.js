@@ -58,9 +58,7 @@ $(function(){
 		},
 
 		render: function(){
-			$(this.el).append("<input type='text' id='searchField'></input>");
-			$(this.el).append("<button id='searchButton'>Search!</button>");
-			$(this.el).append("<ul id='search-food-list'></ul>");
+			//This does nothing anymore, but I'm keeping it in case I want to change that.
 		},
 
 		//Update the collection URL to make and send the correct API call.
@@ -122,14 +120,14 @@ $(function(){
 
 			this.collection = new MealFoods();
 			this.listenTo(this.collection, 'add', this.addMealItemToList);
-
-			this.render();
 		},
 
 		render: function(){
-			$(this.el).append("<h1>Meal!</h1>");
-			$(this.el).append("<ul id='meal-food-list'></ul>");
-			$(this.el).append("<p id='total'>Total Calories: <span>0</span></p>");
+			var total = 0;
+			_.each(this.collection.models, function(model){
+				total += model.attributes.fields.nf_calories;
+			});
+			$(this.el).find('#total span').text(total);
 		},
 
 		addMealItemToList: function(model){

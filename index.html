@@ -12,9 +12,17 @@
     <body>
         <div class='row'>
             <div id='search' class='col-xs-6 col-sm-6 col-md-6 col-lg-6'>
+                <form onsubmit='return false'>
+                    <input type='text' id='searchField'></input>
+                    <button id='searchButton' type='submit'>Search!</button>
+                </form>
+                <ul id='search-food-list'></ul>
             </div>
 
             <div id='meal' class='col-xs-6 col-sm-6 col-md-6 col-lg-6'>
+                <h1>Meal!</h1>
+                <ul id='meal-food-list'></ul>
+                <p id='total'>Total Calories: <span>0</span></p>
             </div>
         </div>
 
