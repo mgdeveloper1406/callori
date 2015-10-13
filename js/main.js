@@ -8,6 +8,7 @@
 	to the list of food in your meal,
 	and the total calories will update.
 */
+
 $(function(){
 
 	'use strict';
@@ -120,8 +121,10 @@ $(function(){
 
 			this.collection = new MealFoods();
 			this.listenTo(this.collection, 'add', this.addMealItemToList);
+			this.listenTo(this.collection, 'remove', this.render);
 		},
 
+		//Updates the calorie total
 		render: function(){
 			var total = 0;
 			_.each(this.collection.models, function(model){
@@ -130,9 +133,11 @@ $(function(){
 			$(this.el).find('#total span').text(total);
 		},
 
+		//Creates a new meal item, adds it to the list, and calls render to update the total
 		addMealItemToList: function(model){
 			var view = new MealItem({model: model});
 			$('#meal-food-list').append(view.render().el);
+			this.render();
 		}
 	});
 
@@ -156,6 +161,7 @@ $(function(){
 		},
 
 		removeMealItem: function(){
+			Meal.collection.remove(this.model);
 			this.remove();
 		}
 	})
