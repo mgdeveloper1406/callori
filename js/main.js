@@ -33,6 +33,11 @@ $(function(){
 			return _.map(data.hits, function(hit) {
 				return new Food(hit);
 			})
+		},
+
+		search: function(url) {
+			this.url = url;
+			this.fetch({reset: true})
 		}
 	});
 
@@ -65,16 +70,18 @@ $(function(){
 			//This does nothing anymore, but I'm keeping it in case I want to change that.
 		},
 
-		//Update the collection URL to make and send the correct API call.
-		//Could just pass the searchField.val() to the collection and handle this there?
+		//ask the collection to update based on the search term
+		//this was all in here (this.collection.url = url; this.collection.fetch({reset:true})),
+		//but it seemed like that should be a method on the collection.
+		//Another way to do it would be to have the view fire an event when the search field is updated,
+		//and have the collection listen for that event and take the neccesary action.
 		search: function(){
-			var searchTerm = $('#searchField').val();
-			this.collection.url =
+			var url =
 				'https://api.nutritionix.com/v1_1/search/' +
-				searchTerm +
+				$('#searchField').val() +
 				'?fields=item_name%2Cbrand_name%2Cnf_calories&appId=58a3a103&appKey=fbcefe5014170fc55dd1fef3d0292a16'
 			;
-			this.collection.fetch({reset: true});
+			this.collection.search(url);
 		},
 
 		//clear the list and repopulate with new items
