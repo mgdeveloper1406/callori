@@ -45,14 +45,15 @@ $(function(){
 	//This view will instantiate the search bar,
 	//and will manage the overall list view
 	var SearchList = Backbone.View.extend({
-		el: $('#search'),
+		el: $('.search'),
 
 		events: {
-			'click button#searchButton': 'search'
+			'click #searchButton': 'search',
+			'keyup #searchField': 'checkForEnter'
 		},
 
 		initialize: function(){
-			_.bindAll(this, 'render', 'search', 'resetSearchList');
+			_.bindAll(this, 'render', 'search', 'resetSearchList', 'checkForEnter');
 
 			this.collection = new SearchFoods();
 			this.listenTo(this.collection, 'reset', this.resetSearchList);
@@ -83,6 +84,13 @@ $(function(){
 				var view = new SearchedFoodItem({model: model});
 	   			$('#searchResultsTable > tbody').append( view.render().el );
 			})
+		},
+
+		//not using a form, so we need to watch for the user pressing enter
+		checkForEnter: function(event){
+			if(event.keyCode == 13){
+        		this.$("#searchButton").click();
+    		}
 		}
 	});
 
