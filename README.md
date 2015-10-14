@@ -8,4 +8,4 @@ Search for food in the upper right hand box, add the right items to your meal, a
 
 ##Live version
 
-[Click here](http://danodea.github.io/calorie-calculator) for a live version
+[Click here](http://danodea.github.io/calorie-counter) for a live version
