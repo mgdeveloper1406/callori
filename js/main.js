@@ -13,12 +13,16 @@ $(function(){
 
 	'use strict';
 
-	// The food model doesn't have any custom logic,
-	// so I think I might be doing it wrong!
+	//Model for food items
 	var Food = Backbone.Model.extend({
 
-		defaults: {
-
+		//parse function to clean up the data a little bit
+		parse: function(data) {
+			var hash = data;
+			//some of the calorie counts are decimals, which causes
+			//rounding errors on the total.  Let's just round them off!
+			hash.nf_calories = Math.ceil(hash.nf_calories);
+			return hash;
 		}
 
 	});
@@ -31,21 +35,21 @@ $(function(){
 		//Need to convert the API data into models
 		parse: function(data) {
 			return _.map(data.hits, function(hit) {
-				return new Food(hit);
+				return new Food(hit.fields, {parse: true});
 			})
 		},
 
 		search: function(url) {
 			this.url = url;
-			this.fetch({reset: true})
+			this.fetch({reset: true});
 		}
 	});
 
 	//This collection will manage the foods that we ate
-	//Again, no custom logic = doing it wrong?
 	var MealFoods = Backbone.Collection.extend({
 		model: Food
 	});
+
 
 	//This view will instantiate the search bar,
 	//and will manage the overall list view
@@ -90,7 +94,7 @@ $(function(){
 			_.each(this.collection.models, function(model){
 				var view = new SearchedFoodItem({model: model});
 	   			$('#searchResultsTable > tbody').append( view.render().el );
-			})
+			});
 		},
 
 		//not using a form, so we need to watch for the user pressing enter
@@ -116,7 +120,7 @@ $(function(){
 		},
 
 		render: function(){
-			$(this.el).html( this.template(this.model.attributes.fields) );
+			$(this.el).html( this.template(this.model.attributes) );
 			return this;
 		},
 
@@ -146,7 +150,7 @@ $(function(){
 		render: function(){
 			var total = 0;
 			_.each(this.collection.models, function(model){
-				total += model.attributes.fields.nf_calories;
+				total += model.attributes.nf_calories;
 			});
 			$(this.el).find('#total span').text(total);
 		},
@@ -174,10 +178,11 @@ $(function(){
 		},
 
 		render: function(){
-			$(this.el).html( this.template(this.model.attributes.fields) );
+			$(this.el).html( this.template(this.model.attributes) );
 			return this;
 		},
 
+		// is there a better way to do this?
 		removeMealItem: function(){
 			Meal.collection.remove(this.model);
 			this.remove();
