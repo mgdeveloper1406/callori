@@ -39,8 +39,11 @@ $(function(){
 			})
 		},
 
-		search: function(url) {
-			this.url = url;
+		search: function(searchTerm) {
+			this.url =
+				'https://api.nutritionix.com/v1_1/search/' +
+				searchTerm +
+				'?fields=item_name%2Cbrand_name%2Cnf_calories&appId=58a3a103&appKey=fbcefe5014170fc55dd1fef3d0292a16'
 			this.fetch({reset: true});
 		}
 	});
@@ -51,8 +54,7 @@ $(function(){
 	});
 
 
-	//This view will instantiate the search bar,
-	//and will manage the overall list view
+	//This view manages the search bar
 	var SearchList = Backbone.View.extend({
 		el: $('.search'),
 
@@ -64,6 +66,7 @@ $(function(){
 		initialize: function(){
 			_.bindAll(this, 'render', 'search', 'resetSearchList', 'checkForEnter');
 
+
 			this.collection = new SearchFoods();
 			this.listenTo(this.collection, 'reset', this.resetSearchList);
 
@@ -74,18 +77,16 @@ $(function(){
 			//This does nothing anymore, but I'm keeping it in case I want to change that.
 		},
 
-		//ask the collection to update based on the search term
-		//this was all in here (this.collection.url = url; this.collection.fetch({reset:true})),
-		//but it seemed like that should be a method on the collection.
-		//Another way to do it would be to have the view fire an event when the search field is updated,
-		//and have the collection listen for that event and take the neccesary action.
+		/*
+		ask the collection to update based on the search term
+		this was all in here (this.collection.url = url; this.collection.fetch({reset:true})),
+		but it seemed like that should be a method on the collection.
+		Another way to do it would be to have the view fire an event when the search field is updated,
+		and have the collection listen for that event and take the neccesary action.
+		*/
 		search: function(){
-			var url =
-				'https://api.nutritionix.com/v1_1/search/' +
-				$('#searchField').val() +
-				'?fields=item_name%2Cbrand_name%2Cnf_calories&appId=58a3a103&appKey=fbcefe5014170fc55dd1fef3d0292a16'
-			;
-			this.collection.search(url);
+			var searchTerm = $('#searchField').val();
+			this.collection.search(searchTerm);
 		},
 
 		//clear the list and repopulate with new items
@@ -189,7 +190,7 @@ $(function(){
 		}
 	})
 
-	var Search = new SearchList;
-	var Meal = new Meal;
+	var Search = new SearchList();
+	var Meal = new Meal();
 
 })
