@@ -10,7 +10,6 @@
 */
 
 $(function(){
-
 	'use strict';
 
 	//Model for food items
@@ -28,19 +27,26 @@ $(function(){
 	});
 
 	//This collection will manage the API call and response
-	var SearchFoods = Backbone.Collection.extend({
+	var SearchFoodsCollection = Backbone.Collection.extend({
 		model: Food,
 		url: '',
+
+		initialize: function(){
+			_.bindAll(this, 'parse', 'search');
+		},
 
 		//Need to convert the API data into models
 		parse: function(data) {
 			return _.map(data.hits, function(hit) {
 				return new Food(hit.fields, {parse: true});
-			})
+			});
 		},
 
-		search: function(url) {
-			this.url = url;
+		search: function(searchTerm) {
+			this.url =
+				'https://api.nutritionix.com/v1_1/search/' +
+				searchTerm +
+				'?fields=item_name%2Cbrand_name%2Cnf_calories&appId=58a3a103&appKey=fbcefe5014170fc55dd1fef3d0292a16';
 			this.fetch({reset: true});
 		}
 	});
@@ -50,63 +56,66 @@ $(function(){
 		model: Food
 	});
 
-
-	//This view will instantiate the search bar,
-	//and will manage the overall list view
-	var SearchList = Backbone.View.extend({
-		el: $('.search'),
+	//This view manages the search bar, and emits events when
+	//the user initiates a search
+	var SearchBarView = Backbone.View.extend({
+		el: $('#searchBar'),
 
 		events: {
-			'click #searchButton': 'search',
+			'click #searchButton': 'initiateSearch',
 			'keyup #searchField': 'checkForEnter'
 		},
 
 		initialize: function(){
-			_.bindAll(this, 'render', 'search', 'resetSearchList', 'checkForEnter');
+			_.bindAll(this, 'checkForEnter', 'initiateSearch');
+		},
 
-			this.collection = new SearchFoods();
+		checkForEnter: function(event){
+			if(event.keyCode == 13){
+	    		this.$("#searchButton").click();
+			}
+		},
+
+		initiateSearch: function(){
+			this.trigger('search', $('#searchField').val());
+		}
+	});
+
+	//This view manages the search results list
+	var SearchListView = Backbone.View.extend({
+		el: $('#searchResults'),
+
+		initialize: function(){
+			_.bindAll(this, 'render', 'resetSearchList');
+
+			//listen for the first time the collection resets
+			this.listenToOnce(SearchBar, 'search', this.render);
+
+			//make a collection
+			this.collection = new SearchFoodsCollection();
+
+			//listen for searches and tell the collection to fetch
+			this.listenTo(SearchBar, 'search', this.collection.search);
+
+			//listen to the collection and update on reset
 			this.listenTo(this.collection, 'reset', this.resetSearchList);
-
-			this.render();
 		},
 
 		render: function(){
-			//This does nothing anymore, but I'm keeping it in case I want to change that.
+			$(this.el).show('slow');
 		},
 
-		//ask the collection to update based on the search term
-		//this was all in here (this.collection.url = url; this.collection.fetch({reset:true})),
-		//but it seemed like that should be a method on the collection.
-		//Another way to do it would be to have the view fire an event when the search field is updated,
-		//and have the collection listen for that event and take the neccesary action.
-		search: function(){
-			var url =
-				'https://api.nutritionix.com/v1_1/search/' +
-				$('#searchField').val() +
-				'?fields=item_name%2Cbrand_name%2Cnf_calories&appId=58a3a103&appKey=fbcefe5014170fc55dd1fef3d0292a16'
-			;
-			this.collection.search(url);
-		},
-
-		//clear the list and repopulate with new items
 		resetSearchList: function(){
 			$('#searchResultsTable > tbody').html('');
 			_.each(this.collection.models, function(model){
-				var view = new SearchedFoodItem({model: model});
+				var view = new SearchedFoodItemView({model: model});
 	   			$('#searchResultsTable > tbody').append( view.render().el );
 			});
-		},
-
-		//not using a form, so we need to watch for the user pressing enter
-		checkForEnter: function(event){
-			if(event.keyCode == 13){
-        		this.$("#searchButton").click();
-    		}
 		}
 	});
 
 	//This view will handle all the searched food models
-	var SearchedFoodItem = Backbone.View.extend({
+	var SearchedFoodItemView = Backbone.View.extend({
 		tagName: 'tr',
 
 		template: _.template($('#food-search-template').html()),
@@ -116,7 +125,7 @@ $(function(){
 		},
 
 		intialize: function(){
-			_.bindAll(this, 'render', 'addToMeal')
+			_.bindAll(this, 'render', 'addToMeal');
 		},
 
 		render: function(){
@@ -124,19 +133,15 @@ $(function(){
 			return this;
 		},
 
-		//Should views talk to unrelated collections like this??
+		//Should views talk to unrelated views/collections like this??
 		addToMeal: function(){
 			Meal.collection.add(this.model.clone());
 		}
 	});
 
 	//This view will handle the meal
-	var Meal = Backbone.View.extend({
+	var MealView = Backbone.View.extend({
 		el: $('#meal'),
-
-		events: {
-
-		},
 
 		initialize: function(){
 			_.bindAll(this, 'render', 'addMealItemToList');
@@ -148,6 +153,9 @@ $(function(){
 
 		//Updates the calorie total
 		render: function(){
+			if (!$(this.el).is(":visible")) {
+				$(this.el).show('medium');
+			}
 			var total = 0;
 			_.each(this.collection.models, function(model){
 				total += model.attributes.nf_calories;
@@ -157,14 +165,14 @@ $(function(){
 
 		//Creates a new meal item, adds it to the list, and calls render to update the total
 		addMealItemToList: function(model){
-			var view = new MealItem({model: model});
+			var view = new MealItemView({model: model});
 			$('#mealTable > tbody').append(view.render().el);
 			this.render();
 		}
 	});
 
 	//A view for each item in the meal
-	var MealItem = Backbone.View.extend({
+	var MealItemView = Backbone.View.extend({
 		tagName: 'tr',
 
 		template: _.template($('#meal-item-template').html()),
@@ -187,9 +195,10 @@ $(function(){
 			Meal.collection.remove(this.model);
 			this.remove();
 		}
-	})
+	});
 
-	var Search = new SearchList;
-	var Meal = new Meal;
+	var SearchBar = new SearchBarView();
+	var SearchList = new SearchListView();
+	var Meal = new MealView();
 
-})
+});
