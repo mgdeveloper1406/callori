@@ -136,7 +136,7 @@ $(function(){
 			return this;
 		},
 
-		//Should views talk to unrelated collections like this??
+		//Should views talk to unrelated views/collections like this??
 		addToMeal: function(){
 			Meal.collection.add(this.model.clone());
 		}
@@ -145,10 +145,6 @@ $(function(){
 	//This view will handle the meal
 	var Meal = Backbone.View.extend({
 		el: $('#meal'),
-
-		events: {
-
-		},
 
 		initialize: function(){
 			_.bindAll(this, 'render', 'addMealItemToList');
@@ -160,6 +156,9 @@ $(function(){
 
 		//Updates the calorie total
 		render: function(){
+			if (!$(this.el).is(":visible")) {
+				$(this.el).show('medium');
+			};
 			var total = 0;
 			_.each(this.collection.models, function(model){
 				total += model.attributes.nf_calories;
