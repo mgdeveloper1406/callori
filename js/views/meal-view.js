@@ -5,7 +5,7 @@ var MealView = Backbone.View.extend({
 	initialize: function(){
 		_.bindAll(this, 'render', 'addMealItemToList');
 
-		this.collection = new MealFoods();
+		this.collection = new Meal();
 		this.listenTo(this.collection, 'add', this.addMealItemToList);
 		this.listenTo(this.collection, 'remove', this.render);
 	},

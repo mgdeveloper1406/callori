@@ -1,5 +1,5 @@
 //This view manages the search results list
-var SearchListView = Backbone.View.extend({
+var SearchResultsView = Backbone.View.extend({
 	el: $('#searchResults'),
 
 	initialize: function(){
@@ -9,7 +9,7 @@ var SearchListView = Backbone.View.extend({
 		this.listenToOnce(SearchBar, 'search', this.render);
 
 		//make a collection
-		this.collection = new SearchFoodsCollection();
+		this.collection = new SearchResults();
 
 		//listen for searches and tell the collection to fetch
 		this.listenTo(SearchBar, 'search', this.collection.search);
@@ -25,7 +25,7 @@ var SearchListView = Backbone.View.extend({
 	resetSearchList: function(){
 		$('#searchResultsTable > tbody').html('');
 		_.each(this.collection.models, function(model){
-			var view = new SearchedFoodItemView({model: model});
+			var view = new SearchedItemView({model: model});
    			$('#searchResultsTable > tbody').append( view.render().el );
 		});
 	}

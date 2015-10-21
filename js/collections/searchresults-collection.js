@@ -1,5 +1,5 @@
 //This collection will manage the API call and response
-var SearchFoodsCollection = Backbone.Collection.extend({
+var SearchResults = Backbone.Collection.extend({
 	model: Food,
 	url: '',
 

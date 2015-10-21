@@ -10,6 +10,7 @@
 */
 
 
-var SearchBar = new SearchBar();
-var SearchList = new SearchListView();
+var SearchBar = new SearchBarView();
+var SearchResults = new SearchResultsView();
 var Meal = new MealView();
+

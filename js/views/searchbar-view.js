@@ -1,6 +1,6 @@
 //This view manages the search bar, and emits events when
 //the user initiates a search
-var SearchBar = Backbone.View.extend({
+var SearchBarView = Backbone.View.extend({
 	el: $('#searchBar'),
 
 	events: {

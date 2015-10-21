@@ -1,5 +1,5 @@
 //This view will handle all the searched food models
-var SearchedFoodItemView = Backbone.View.extend({
+var SearchedItemView = Backbone.View.extend({
 	tagName: 'tr',
 
 	template: _.template($('#food-search-template').html()),
